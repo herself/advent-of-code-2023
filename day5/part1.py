@@ -36,27 +36,22 @@ while True:
 
 print("\nIngredient map ranges: {}".format(ingredient_map_ranges))
 
-for key, range_list in ingredient_map_ranges.items():
-    print("Analyzing {}".format(key))
-    ingredient_mappings[key] = {}
-    for range_item in range_list:
-        print(range_item)
-        for i in range(range_item["length"]):
-            ingredient_mappings[key][range_item["source"] + i] = range_item["destination"] + i
-
-print("\nIngredient mappings: {}\n".format(ingredient_mappings))
-
 for step, used_map in enumerate(stages_list[1:]):
     print(used_map)
     seeds_transposed[used_map] = []
     for i in range(len(seeds_transposed["original"])):
-        try:
-            seeds_transposed[used_map].append(
-                ingredient_mappings[used_map][
-                    seeds_transposed[stages_list[step]][i]
-                ])
-        except KeyError:
-            seeds_transposed[used_map].append(seeds_transposed[stages_list[step]][i])
-    print(seeds_transposed)
+        current_seed = seeds_transposed[stages_list[step]][i]
+        print("current: {} ({})".format(current_seed, i))
+        for range_item in ingredient_map_ranges[used_map]:
+            range_start = range_item["source"]
+            range_finish = range_item["source"] + range_item["length"] - 1
+
+            print("Checking range {}, start: {}, finish: {}".format(range_item, range_start, range_finish))
+            if current_seed >= range_start and current_seed <= range_finish:
+                print("Seed transposed! {} <= {} <= {}".format(range_start, current_seed, range_finish))
+                seeds_transposed[used_map].append(range_item["destination"] + (current_seed - range_start))
+
+        if len(seeds_transposed[used_map]) == i:
+            seeds_transposed[used_map].append(current_seed)
 
 print("\nLowest location number: {}".format(min(seeds_transposed["humidity-to-location"])))
